@@ -7,10 +7,11 @@ def conway():
     offset = (0,0)
     step = 20
     pygame.init()
-    world = pygame.display.set_mode(size = (x,y))
+    world = pygame.display.set_mode(size = (x+300,y))
     map = dict()
     line_color = (0,0,0)
-    box_color = (255,255,0)
+    box_color = [0,255,255]
+    current_color = box_color
     box_positions = dict()
     current_map = dict()
     pause = True
@@ -18,7 +19,7 @@ def conway():
     for i in range(0, x//step):
         for j in range(0, y//step):
             if (i,j) not in current_map:
-                current_map[(i,j)] = 0
+                current_map[(i,j)] = [0, box_color]
 
 
     while running:
@@ -28,8 +29,8 @@ def conway():
         if pause == False:
             current_map = run_conway(current_map, step, x//step, y//step)
             pause = True
-        draw_lines(world, offset, step, line_color)
-        draw_squares(world, current_map, offset, step, box_color)
+        draw_lines(world, offset, step, line_color, x, y)
+        draw_squares(world, current_map, offset, step)
 
         pygame.display.update()
         for event in pygame.event.get():
@@ -39,26 +40,29 @@ def conway():
                 mouse_pos = pygame.mouse.get_pos()
                 new_coord = (mouse_pos[0]//step, mouse_pos[1]//step)
 
-                if current_map[new_coord] == 0:
-                    current_map[new_coord] = 1
+                if current_map[new_coord][0] == 0:
+                    current_map[new_coord][0] = 1
                 else:
-                    current_map[new_coord] = 0
-
-
-
+                    current_map[new_coord][0] = 0
                 break
 
             elif event.type == pygame.KEYDOWN:
+                print(event.key)
                 if (event.key == 112):
                     if pause == True:
                         pause = False
                     else:
                         pause = True
+                elif(event.key == 99):
+                    for i in range(0, x//step):
+                        for j in range(0, y//step):
+                            if (i,j) in current_map:
+                                current_map[(i,j)] = [0, box_color]
 
 
-def draw_lines(world, offset, step, line_color):
-    height = world.get_height()
-    width = world.get_width()
+def draw_lines(world, offset, step, line_color, x, y):
+    height = x
+    width = y
 
 
     for i in range(0, height, step):
@@ -67,13 +71,14 @@ def draw_lines(world, offset, step, line_color):
     for i in range(0, width, step):
         pygame.draw.line(world, line_color, (i, 0), (i,height),1)
 
-def draw_squares(world, current_map, offset, step, box_color):
+def draw_squares(world, current_map, offset, step):
 
     for key in current_map:
-        if current_map[key] == 1:
+        if current_map[key][0] == 1:
             x = key[0]
             y = key[1]
-            pygame.draw.rect(world, box_color, (x*step, y*step, step,step))
+            pygame.draw.rect(world, current_map[key][1],
+             (x*step, y*step, step,step))
 
 def run_conway(current_map, step, width, height):
 
@@ -100,19 +105,19 @@ def run_conway(current_map, step, width, height):
 
                     x_y = (x, y)
                     if x_y in current_map:
-                        sum += current_map[x_y]
+                        sum += current_map[x_y][0]
 
-        if current_map[coord] == 0:
+        if current_map[coord][0] == 0:
             if sum == 3:
-                new_map[coord] = 1
+                new_map[coord] = [1, current_map[coord][1]]
 
             else:
-                new_map[coord] = 0
+                new_map[coord] = [0, current_map[coord][1]]
         else:
             if (sum == 2) or (sum == 3):
-                new_map[coord] = 1
+                new_map[coord] = [1, current_map[coord][1]]
             else:
-                new_map[coord] = 0
+                new_map[coord] = [0, current_map[coord][1]]
 
     return new_map
 
