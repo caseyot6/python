@@ -1,25 +1,31 @@
 import pygame
+import pickle
 
 def conway():
+
+    pygame.init()
+
     x = 600
     y = 600
     running = True
     offset = (0,0)
-    step = 20
-    pygame.init()
+    step = 10
     world = pygame.display.set_mode(size = (x+300,y))
+    current_law = 0
     map = dict()
     line_color = (0,0,0)
     box_color = [0,255,255]
     current_color = box_color
     box_positions = dict()
+    box_colors = {0:(255,0,0), 1:(0,255,0),2:(0,0,255)}
     current_map = dict()
     pause = True
+    current_num = 1
 
     for i in range(0, x//step):
         for j in range(0, y//step):
             if (i,j) not in current_map:
-                current_map[(i,j)] = [0, box_color]
+                current_map[(i,j)] = [0, box_colors[current_num]]
 
 
     while running:
@@ -27,8 +33,11 @@ def conway():
         world.fill((255,255,255))
 
         if pause == False:
+
             current_map = run_conway(current_map, step, x//step, y//step)
+
             pause = True
+
         draw_lines(world, offset, step, line_color, x, y)
         draw_squares(world, current_map, offset, step)
 
@@ -41,29 +50,36 @@ def conway():
                 new_coord = (mouse_pos[0]//step, mouse_pos[1]//step)
 
                 if current_map[new_coord][0] == 0:
-                    current_map[new_coord][0] = 1
+                    current_map[new_coord] = [current_num, box_colors[current_num]]
                 else:
-                    current_map[new_coord][0] = 0
-                break
+                    current_map[new_coord] = [0, box_colors[current_num]]
 
             elif event.type == pygame.KEYDOWN:
                 print(event.key)
                 if (event.key == 112):
                     if pause == True:
                         pause = False
+
+
                     else:
                         pause = True
                 elif(event.key == 99):
                     for i in range(0, x//step):
                         for j in range(0, y//step):
                             if (i,j) in current_map:
-                                current_map[(i,j)] = [0, box_color]
+                                current_map[(i,j)] = [0, box_colors[current_num]]
 
+                elif(event.key == 111):
+                    mouse_pos = pygame.mouse.get_pos()
+                    new_coord = (mouse_pos[0]//step, mouse_pos[1]//step)
+                    current_map = add_conway_shape(0, current_map, new_coord,
+                    x//step, y//step)
 
+                    print(current_num)
 def draw_lines(world, offset, step, line_color, x, y):
+
     height = x
     width = y
-
 
     for i in range(0, height, step):
         pygame.draw.line(world, line_color, (0, i), (width, i),1)
@@ -74,7 +90,7 @@ def draw_lines(world, offset, step, line_color, x, y):
 def draw_squares(world, current_map, offset, step):
 
     for key in current_map:
-        if current_map[key][0] == 1:
+        if current_map[key][0] != 0:
             x = key[0]
             y = key[1]
             pygame.draw.rect(world, current_map[key][1],
@@ -120,5 +136,34 @@ def run_conway(current_map, step, width, height):
                 new_map[coord] = [0, current_map[coord][1]]
 
     return new_map
+
+def add_conway_shape(index, current_map, new_coord, width, height):
+    glider = [(0,0), (-1,1),(1,0),(0,-1),(-1,-1)]
+
+
+
+    shapes = [glider]
+
+
+
+    for i in shapes[index]:
+        x = i[0]+new_coord[0]
+        y = i[1]+new_coord[1]
+
+        if (x >= width):
+            x = 0
+        elif(x < 0):
+            x = width-1
+
+        if (y >= height):
+            y = 0
+        elif(y < 0):
+            y = height-1
+
+        current_map[(x,y)][0] = 1
+
+
+    return current_map
+
 
 conway()
