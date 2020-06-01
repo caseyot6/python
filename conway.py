@@ -27,7 +27,7 @@ def conway():
     last_frame = 0
     period = 50
     shape_num = 1
-
+    #initialize dictionary containing each possible position
     for i in range(0, x//step):
         for j in range(0, y//step):
             if (i,j) not in current_map:
